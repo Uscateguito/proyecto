@@ -190,7 +190,6 @@ void abrir_imagen(BMP *imagen, char *ruta)
 
 void convertir_imagen(BMP *imagen, int nhilos)
 {
-	// orden: blue, green, red
 	int i, j, k;
 
 	unsigned char temp;
@@ -200,30 +199,11 @@ void convertir_imagen(BMP *imagen, int nhilos)
 		for (j = 0; j < imagen->ancho; j++)
 		{
 			// temp = (unsigned char)((imagen->pixel[i][j][2]*0.3)+(imagen->pixel[i][j][1]*0.59)+ (imagen->pixel[i][j][0]*0.11));
-			// temp = (unsigned char)((imagen->pixel[i][j][2]+imagen->pixel[i][j][1] + imagen->pixel[i][j][0]));
-			// temp = (unsigned char)((imagen->pixel[i][j][2] + imagen->pixel[i][j][1] + imagen->pixel[i][j][0])/3);
+			// temp = (unsigned char)((imagen->pixel[i][j][2]*0.3+imagen->pixel[i][j][1]*0.59 + imagen->pixel[i][j][0]*0.11));
+			temp = (unsigned char)((imagen->pixel[i][j][2] + imagen->pixel[i][j][1] + imagen->pixel[i][j][0]));
+
 			for (k = 0; k < 3; k++)
-
-				if (imagen->pixel[i][j][k] <= 255 && k == 2)
-				{
-					imagen->pixel[i][j][k] = (unsigned char)0; // pongo los pixeles azules bajos
-				}
-				/* else if (imagen->pixel[i][j][k] <= 255 && k == 1)
-				{
-					imagen->pixel[i][j][k] = (unsigned char)0; // pongo los pixeles rojos bajos
-				} */
-				// Al eliminar azules y rojos, creo un filtro verde
-
-				/* else if (imagen->pixel[i][j][k] < 100 && k == 1)
-				{
-					imagen->pixel[i][j][k] = (unsigned char)0; // pongo los pixeles verdes bajos
-				}
-				else if (imagen->pixel[i][j][k] < 100 && k == 2)
-				{
-					imagen->pixel[i][j][k] = (unsigned char)250; // pongo los pixeles rojos altos
-				} */
-
-			// imagen->pixel[i][j][k] = (unsigned char)temp; // Formula correcta
+				imagen->pixel[i][j][k] = (unsigned char)temp; // Formula correcta
 		}
 	}
 }
@@ -268,7 +248,7 @@ void crear_imagen(BMP *imagen, char ruta[])
 		{
 
 			for (k = 0; k < 3; k++)
-				fwrite(&imagen->pixel[i][j][k], sizeof(char), 1, archivo); // Escribir el Byte Blue del pixel
+				fwrite(&imagen->pixel[i][j][k], sizeof(char), 1, archivo); // Escribir los 3 bytes para azul, verde y rojo
 		}
 	}
 	// Cerrrar el archivo
