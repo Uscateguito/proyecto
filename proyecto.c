@@ -49,22 +49,23 @@ typedef struct BMP
 // por esto las variables tipo "string" están inicializadas de esta manera (como si fueran un buffer)
 char imagenIn[200];
 char imagenOut[200];
+int anchoactual = 0;
+int multiplicadorAncho = 0;
 int nhilos = 0;
 int opcion = 0;
 BMP img;
 int parteResuelta = 0;
 
-void *filtroOpcionUno(void *anchoActual)
+void *filtroOpcionUno(void *ptr)
 {
 	// orden: blue, green, red
-	int *anchoactual = (int *)anchoActual;
 	int i, j, k;
 
 	unsigned char temp;
 
 	for (i = 0; i < img.alto; i++)
 	{
-		for (j = *anchoactual; j < img.ancho; j++)
+		for (j = anchoactual*multiplicadorAncho; j < anchoactual; j++)
 		{
 			temp = (unsigned char)((img.pixel[i][j][2] * 0.3 + img.pixel[i][j][1] * 0.59 + img.pixel[i][j][0] * 0.11));
 
@@ -74,19 +75,20 @@ void *filtroOpcionUno(void *anchoActual)
 			}
 		}
 	}
+
+	multiplicadorAncho++;
 }
 
-void *filtroOpcionDos(void *anchoActual)
+void *filtroOpcionDos(void *ptr)
 {
 	// orden: blue, green, red
-	int *anchoactual = (int *)anchoActual;
 	int i, j, k;
 
 	unsigned char temp;
 
 	for (i = 0; i < img.alto; i++)
 	{
-		for (j = *anchoactual; j < img.ancho; j++)
+		for (j = anchoactual*multiplicadorAncho; j < anchoactual; j++)
 		{
 			temp = (unsigned char)((img.pixel[i][j][2] + img.pixel[i][j][1] + img.pixel[i][j][0]) / 3);
 
@@ -96,17 +98,19 @@ void *filtroOpcionDos(void *anchoActual)
 			}
 		}
 	}
+
+	multiplicadorAncho++;
+
 }
 
-void *filtroSinRojos(void *anchoActual)
+void *filtroSinRojos(void *ptr)
 {
 	// orden: blue, green, red
-	int *anchoactual = (int *)anchoActual;
 	int i, j, k;
 
 	for (i = 0; i < img.alto; i++)
 	{
-		for (j = *anchoactual; j < img.ancho; j++)
+		for (j = anchoactual*multiplicadorAncho; j < anchoactual; j++)
 		{
 			for (k = 0; k < 3; k++)
 
@@ -116,6 +120,9 @@ void *filtroSinRojos(void *anchoActual)
 				}
 		}
 	}
+
+	multiplicadorAncho++;
+
 }
 
 void abrir_imagen(BMP *imagen, char *ruta)
@@ -316,7 +323,7 @@ int main(int argc, char **argv)
 	case 1:
 		for (int i = 0; i < nhilos; i++)
 		{
-			ancho = i * (img.ancho / nhilos);
+			anchoactual = (i+1) * (img.ancho / nhilos);
 			pthread_create(&hilos[i], NULL, filtroSinRojos, (void *)&ancho);
 		}
 
@@ -329,7 +336,7 @@ int main(int argc, char **argv)
 	case 2:
 		for (int i = 0; i < nhilos; i++)
 		{
-			ancho = i * (img.ancho / nhilos);
+			anchoactual = (i+1) * (img.ancho / nhilos);
 			pthread_create(&hilos[i], NULL, filtroOpcionUno, (void *)&ancho);
 		}
 
@@ -342,7 +349,7 @@ int main(int argc, char **argv)
 	case 3:
 		for (int i = 0; i < nhilos; i++)
 		{
-			ancho = i * (img.ancho / nhilos);
+			anchoactual = (i+1) * (img.ancho / nhilos);
 			pthread_create(&hilos[i], NULL, filtroOpcionDos, (void *)&ancho);
 		}
 
