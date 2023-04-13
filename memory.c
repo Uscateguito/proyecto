@@ -23,11 +23,11 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-
+#include <signal.h>
+#include <sys/time.h>
 
 #define SIZE          8192  /* tamaño de buffer para leer /proc/<pid>/status */
 #define INTERVAL        61  /* muestrear unas 16 veces por segundo */
-
 
 pid_t pid;
 int max_data= 0;
