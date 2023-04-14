@@ -10,8 +10,7 @@
 // y hacer la conversion de los pixeles en una funci'on. Esto facilita la programacion posterior
 // con hilos.
 
-// Archivo nuevamente modificado por alejandro Uscátegui, ejecutando el programa con hilos y agregando un filtro que elimina los colores rojos. 
-
+// Archivo nuevamente modificado por alejandro Uscátegui, ejecutando el programa con hilos y agregando un filtro que elimina los colores rojos.
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -56,6 +55,28 @@ int opcion = 0;
 BMP img;
 int parteResuelta = 0;
 
+// Función extra para que la interfaz se vea decente
+void mostrarASCII(char *nombredelarchivo)
+{
+	FILE *apuntadorAlArchivo;
+	char linea[300];
+
+	apuntadorAlArchivo = fopen(nombredelarchivo, "r");
+
+	if (apuntadorAlArchivo == NULL)
+	{
+		printf("Error opening file.\n");
+		return;
+	}
+
+	while (fgets(linea, 300, apuntadorAlArchivo) != NULL)
+	{
+		printf("%s", linea);
+	}
+
+	fclose(apuntadorAlArchivo);
+}
+
 void *filtroOpcionUno(void *ptr)
 {
 	// orden: blue, green, red
@@ -65,7 +86,7 @@ void *filtroOpcionUno(void *ptr)
 
 	for (i = 0; i < img.alto; i++)
 	{
-		for (j = anchoactual*multiplicadorAncho; j < anchoactual; j++)
+		for (j = anchoactual * multiplicadorAncho; j < anchoactual; j++)
 		{
 			temp = (unsigned char)((img.pixel[i][j][2] * 0.3 + img.pixel[i][j][1] * 0.59 + img.pixel[i][j][0] * 0.11));
 
@@ -88,7 +109,7 @@ void *filtroOpcionDos(void *ptr)
 
 	for (i = 0; i < img.alto; i++)
 	{
-		for (j = anchoactual*multiplicadorAncho; j < anchoactual; j++)
+		for (j = anchoactual * multiplicadorAncho; j < anchoactual; j++)
 		{
 			temp = (unsigned char)((img.pixel[i][j][2] + img.pixel[i][j][1] + img.pixel[i][j][0]) / 3);
 
@@ -100,7 +121,6 @@ void *filtroOpcionDos(void *ptr)
 	}
 
 	multiplicadorAncho++;
-
 }
 
 void *filtroSinRojos(void *ptr)
@@ -110,7 +130,7 @@ void *filtroSinRojos(void *ptr)
 
 	for (i = 0; i < img.alto; i++)
 	{
-		for (j = anchoactual*multiplicadorAncho; j < anchoactual; j++)
+		for (j = anchoactual * multiplicadorAncho; j < anchoactual; j++)
 		{
 			for (k = 0; k < 3; k++)
 
@@ -122,7 +142,6 @@ void *filtroSinRojos(void *ptr)
 	}
 
 	multiplicadorAncho++;
-
 }
 
 void abrir_imagen(BMP *imagen, char *ruta)
@@ -136,7 +155,11 @@ void abrir_imagen(BMP *imagen, char *ruta)
 	if (!archivo)
 	{
 		// Si la imágen no se encuentra en la ruta dada
-		printf("La imágen %s no se encontro\n", ruta);
+		printf("\n*****************************************************************************\n");
+		mostrarASCII("codigoerror.txt");
+		printf("\nLa imágen %s no se encontro\n", ruta);
+		printf("\n*****************************************************************************\n");
+
 		exit(1);
 	}
 
@@ -161,12 +184,20 @@ void abrir_imagen(BMP *imagen, char *ruta)
 	// Validar ciertos datos de la cabecera de la imágen
 	if (imagen->bm[0] != 'B' || imagen->bm[1] != 'M')
 	{
+		printf("\n*********************************************************\n");
+		mostrarASCII("codigoerror.txt");
 		printf("La imagen debe ser un bitmap.\n");
+		printf("\n*********************************************************\n");
+
 		exit(1);
 	}
 	if (imagen->profundidadColor != 24)
 	{
+		printf("\n*********************************************************\n");
+		mostrarASCII("codigoerror.txt");
 		printf("La imagen debe ser de 24 bits.\n");
+		printf("\n*********************************************************\n");
+
 		exit(1);
 	}
 
@@ -214,6 +245,7 @@ void crear_imagen(BMP *imagen, char ruta[])
 	if (!archivo)
 	{
 		// Si la imágen no se encuentra en la ruta dada
+		mostrarASCII("codigoerror.txt");
 		printf("La imágen %s no se pudo crear\n", ruta);
 		exit(1);
 	}
@@ -250,9 +282,22 @@ void crear_imagen(BMP *imagen, char ruta[])
 	fclose(archivo);
 }
 
+
+
 int main(int argc, char **argv)
 {
 	// # Validaciones
+
+	if (argc != 9)
+	{
+		printf("\n*****************************************************************************\n");
+		mostrarASCII("codigoerror.txt");
+		printf("\n\nRecuerde que debe ingresar el nombre de la imagen que quiere modificar con su extensión '.bmp', \nasí como el nombre que desea que tenga su imagen ya tratada\n");
+		printf("\ntambién debe seleccionar la opcion que desea (para este proyecto solo 3), y el número de hilos con los que desea ejecutar el programa");
+		printf("\neste es un ejemplo de argumentos válidos: -i imagenin.bmp -t imagenout.bmp -o 1 -h 3\n");
+		printf("\n*****************************************************************************\n");
+		exit(0);
+	}
 
 	for (int i = 1; i < argc; i += 2)
 	{
@@ -266,17 +311,20 @@ int main(int argc, char **argv)
 			nhilos = atoi(argv[i + 1]);
 	}
 
+	if (opcion < 1 || opcion > 3)
+	{
+		printf("\n*****************************************************************************\n");
+		mostrarASCII("codigoerror.txt");
+		printf("\nla opción -o que ingresó no es válida\n");
+		printf("\n*****************************************************************************\n");
+		exit(0);
+	}
+
 	//******************************************************************
 	// Si no se introdujo la ruta de la imagen BMP
 	//******************************************************************
 	// Si no se introduce una ruta de imágen
-	if (argc != 9)
-	{
-		printf("\nRecuerde que debe ingresar el nombre de la imagen que quiere modificar con su extensión '.bmp', \nasí como el nombre que desea que tenga su imagen ya tratada\n");
-		printf("\ntambién debe seleccionar la opcion que desea (para este proyecto solo 3), y el número de hilos con los que desea ejecutar el programa");
-		printf("\neste es un ejemplo de argumentos válidos: -i imagenin.bmp -t imagenout.bmp -o 1 -h 3");
-		exit(1);
-	}
+	
 
 	// # Variables del programa principal
 
@@ -300,19 +348,25 @@ int main(int argc, char **argv)
 		strcpy(imagenOriginal, imagenIn);
 	}
 
-	printf("\nImágen BMP original en el archivo: %s\n", imagenOriginal);
-
 	abrir_imagen(&img, imagenOriginal);
-	printf("\n*************************************************************************");
-	printf("\nimagenOriginal: %s", imagenOriginal);
-	printf("\n*************************************************************************");
-	printf("\nDimensiones de la imágen:\tAlto=%d\t|\tAncho=%d\n", img.alto, img.ancho);
 
 	if (nhilos > img.ancho)
 	{
-		printf("El programa se puede ejecutar con un número máximo de hilos equivalentes al ancho de la imagen, para este caso paticular se permiten máximo %d hilos", img.ancho);
+		printf("\n*****************************************************************************\n");
+		mostrarASCII("codigoerror.txt");
+		printf("\nEl programa se puede ejecutar con un número máximo de hilos equivalentes al ancho de la imagen, para este caso paticular se permiten máximo %d hilos\n", img.ancho);
+		printf("\n*****************************************************************************\n");
+
 		exit(0);
 	}
+
+	printf("\nBienvenidx al programa de tratamiento de imágenes BMP\n");
+	printf("\n*****************************************************************************\n");
+	printf("\n--------------------------------------------------------------------------\n\n");
+	mostrarASCII("ascii.txt");
+	printf("\n\n--------------------------------------------------------------------------\n");
+	printf("\nImagen Original: %s\n", imagenOriginal);
+	printf("\nDimensiones de la imágen:\tAlto=%d\t|\tAncho=%d\n", img.alto, img.ancho);
 
 	// Estructura para meter más de un argumento a la función del hilo
 
@@ -321,9 +375,13 @@ int main(int argc, char **argv)
 	switch (opcion)
 	{
 	case 1:
+		printf("\n--------------------------------------------------------------------------\n");
+		printf("\n¡Usted ha elegido el filtro creado por ALEJANDRO USCÁTEGUI Y MARÍA JOSÉ GÓMEZ!\n");
+		printf("\n--------------------------------------------------------------------------\n");
+
 		for (int i = 0; i < nhilos; i++)
 		{
-			anchoactual = (i+1) * (img.ancho / nhilos);
+			anchoactual = (i + 1) * (img.ancho / nhilos);
 			pthread_create(&hilos[i], NULL, filtroSinRojos, (void *)&ancho);
 		}
 
@@ -334,9 +392,13 @@ int main(int argc, char **argv)
 		break;
 
 	case 2:
+		printf("\n--------------------------------------------------------------------------\n");
+		printf("\n¡Usted ha elegido el filtro creado por EDGARDO ADRIÁN FRANCO MARTÍNEZ!\n");
+		printf("\n--------------------------------------------------------------------------\n");
+
 		for (int i = 0; i < nhilos; i++)
 		{
-			anchoactual = (i+1) * (img.ancho / nhilos);
+			anchoactual = (i + 1) * (img.ancho / nhilos);
 			pthread_create(&hilos[i], NULL, filtroOpcionUno, (void *)&ancho);
 		}
 
@@ -347,9 +409,13 @@ int main(int argc, char **argv)
 		break;
 
 	case 3:
+		printf("\n--------------------------------------------------------------------------\n");
+		printf("\n¡Usted ha elegido el filtro creado por MARIEL CURIEL!\n");
+		printf("\n--------------------------------------------------------------------------\n");
+
 		for (int i = 0; i < nhilos; i++)
 		{
-			anchoactual = (i+1) * (img.ancho / nhilos);
+			anchoactual = (i + 1) * (img.ancho / nhilos);
 			pthread_create(&hilos[i], NULL, filtroOpcionDos, (void *)&ancho);
 		}
 
@@ -360,6 +426,7 @@ int main(int argc, char **argv)
 		break;
 
 	default:
+
 		break;
 	}
 
@@ -383,7 +450,9 @@ int main(int argc, char **argv)
 	}
 
 	crear_imagen(&img, imagenTratada);
+	printf("\n*********************************************************\n");
 	printf("\nImágen BMP tratada en el archivo: %s\n", imagenTratada);
+	printf("\n*********************************************************\n");
 
 	// Terminar programa normalmente
 	return 0;
